@@ -1,0 +1,20 @@
+using System;
+
+public class CPHInline
+{
+    public bool Execute()
+    {
+        try
+        {
+            string json = "{\"command\":\"showMerch\"}";
+            CPH.WebsocketBroadcastJson(json);
+            CPH.LogInfo("Sent merch trigger: " + json);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            CPH.LogError("Merch trigger failed: " + ex.Message);
+            return false;
+        }
+    }
+}

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Merch Overlay</title>
+
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* IMAGE */
+#merch {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  max-width: 90vw;
+  max-height: 90vh;
+
+  transform: translate(-50%, -50%) scale(0.8) rotate(0deg);
+  transform-origin: center;
+
+  opacity: 0;
+  display: none;
+
+  /* ✅ VERY LIGHT GLOW (no square box issue) */
+  filter: drop-shadow(0 0 5px rgba(0,180,255,0.3));
+}
+
+/* DEBUG */
+#debug {
+  position: fixed;
+  left: 10px;
+  bottom: 10px;
+  color: white;
+  font: 14px Arial;
+  text-shadow: 0 0 4px black;
+}
+</style>
+</head>
+
+<body>
+
+<div id="stage">
+  <img id="merch" src="merch_static.png" alt="Merch">
+</div>
+
+<div id="debug">starting...</div>
+
+<script>
+const merch = document.getElementById("merch");
+const debug = document.getElementById("debug");
+
+let swayInterval = null;
+let hideTimer = null;
+
+function log(msg) {
+  console.log("[MERCH]", msg);
+  debug.textContent = msg;
+}
+
+function clearTimers() {
+  if (swayInterval) clearInterval(swayInterval);
+  if (hideTimer) clearTimeout(hideTimer);
+  swayInterval = null;
+  hideTimer = null;
+}
+
+function reset() {
+  clearTimers();
+  merch.style.display = "none";
+  merch.style.opacity = "0";
+  merch.style.transform = "translate(-50%, -50%) scale(0.8) rotate(0deg)";
+}
+
+function fadeIn() {
+  merch.style.display = "block";
+  merch.style.opacity = "1";
+  merch.style.transition = "opacity 0.8s ease, transform 0.8s ease";
+  merch.style.transform = "translate(-50%, -50%) scale(1) rotate(0deg)";
+}
+
+function startSway() {
+  let step = 0;
+  const angles = [-3, 2.5, -2, 1, 0];
+
+  swayInterval = setInterval(() => {
+    const angle = angles[step % angles.length];
+    merch.style.transition = "transform 1.8s ease-in-out";
+    merch.style.transform = `translate(-50%, -50%) scale(1) rotate(${angle}deg)`;
+    step++;
+  }, 1800);
+}
+
+function fadeOut() {
+  merch.style.transition = "opacity 1s ease, transform 1s ease";
+  merch.style.opacity = "0";
+  merch.style.transform = "translate(-50%, -50%) scale(0.9) rotate(0deg)";
+
+  setTimeout(() => {
+    merch.style.display = "none";
+    log("waiting...");
+  }, 1000);
+}
+
+function runOverlay() {
+  log("running overlay");
+
+  reset();
+
+  merch.style.display = "block";
+  merch.style.opacity = "0";
+  void merch.offsetWidth;
+
+  fadeIn();
+
+  setTimeout(() => {
+    startSway();
+  }, 900);
+
+  hideTimer = setTimeout(() => {
+    clearTimers();
+    fadeOut();
+  }, 300000); // 5 minutes
+}
+
+/* IMAGE DEBUG */
+merch.onload = () => log("image loaded");
+merch.onerror = () => log("image FAILED");
+
+/* 🔁 LOOP EVERY 5 MINUTES */
+function loopOverlay() {
+  runOverlay();
+  setTimeout(loopOverlay, 300000);
+}
+
+/* START */
+reset();
+loopOverlay();
+
+log("READY");
+</script>
+
+</body>
+</html>
